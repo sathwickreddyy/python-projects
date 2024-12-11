@@ -33,7 +33,7 @@ export class Ec2Construct extends Construct {
       vpc: props.vpc,
       instanceType: new ec2.InstanceType('t3.micro'),
       machineImage: ec2.MachineImage.latestAmazonLinux2(),
-      minCapacity: 1,
+      minCapacity: 2,
       maxCapacity: 3,
       securityGroup,
       userData,

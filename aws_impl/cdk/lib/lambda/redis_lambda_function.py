@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 
 # Initialize SSM client
 ssm_client = boto3.client('ssm', region_name='ap-southeast-2')
@@ -7,8 +8,8 @@ ssm_client = boto3.client('ssm', region_name='ap-southeast-2')
 
 def lambda_handler(event, context):
     # Define configuration details
-    redis_endpoint = "your-redis-endpoint"
-    sns_topic_arn = "arn:aws:sns:us-east-1:123456789012:YourSNSTopic"
+    redis_endpoint = os.environ.get('REDIS_ENDPOINT')
+    sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
 
     try:
         # Write Redis endpoint to SSM Parameter Store

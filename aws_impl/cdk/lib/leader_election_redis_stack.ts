@@ -38,6 +38,7 @@ export class LeaderElectionWithRedisStack extends Stack {
     new LambdaConstruct(this, 'LambdaConstruct', {
       redisEndpoint: redisConstruct.getRedisEndpoint(),
       snsTopicArn: snsConstruct.getTopicArn(),
+      redisClusterName: redisConstruct.getRedisClusterName(),
     });
   }
 }

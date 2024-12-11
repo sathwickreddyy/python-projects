@@ -9,6 +9,7 @@ interface RedisConstructProps {
 
 export class RedisConstruct extends Construct {
   private readonly redisEndpoint: string;
+  private readonly redisClusterName: string;
 
   constructor(scope: Construct, id: string, props: RedisConstructProps) {
     super(scope, id);
@@ -32,9 +33,14 @@ export class RedisConstruct extends Construct {
     });
 
     this.redisEndpoint = cluster.attrRedisEndpointAddress;
+    this.redisClusterName = cluster.ref;
   }
 
   public getRedisEndpoint(): string {
     return this.redisEndpoint;
+  }
+
+  public getRedisClusterName(): string {
+    return this.redisClusterName;
   }
 }

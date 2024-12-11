@@ -7,6 +7,7 @@ interface SsmProps {
 }
 
 export class SsmConstruct extends Construct {
+
   constructor(scope: Construct, id: string, props: SsmProps) {
     super(scope, id);
 
