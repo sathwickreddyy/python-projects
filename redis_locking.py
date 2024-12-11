@@ -24,24 +24,7 @@ def send_heartbeat():
     """
     Send periodic heartbeat to indicate this instance is alive.
     """
-    while True:
-        redis_client.set(HEARTBEAT_KEY, "alive", ex=5)  # Heartbeat expires in 5 seconds
-        time.sleep(3)  # Send heartbeat every 3 seconds
-
-def monitor_leader():
-    """
-    Monitor the current leader's heartbeat. If it fails, attempt to become the new leader.
-    """
-    while True:
-        current_leader = redis_client.get(LEADER_KEY)
-        if current_leader is None:  # No active leader
-            if acquire_leader():
-                print(f"{instance_id} is now the leader!")
-                threading.Thread(target=send_heartbeat).start()
-                execute_program()  # Leader executes the program
-        elif current_leader.decode() != instance_id:
-            print(f"{instance_id} is a follower. Current leader: {current_leader.decode()}")
-        time.sleep(2)
+    redis_client.set(HEARTBEAT_KEY, "alive", ex=5)  # Heartbeat expires in 5 seconds
 
 def acquire_program_lock():
     """
@@ -86,6 +69,14 @@ def execute_program():
     else:
         print(f"{instance_id} could not acquire program lock. Another instance is executing.")
 
-# Start monitoring for leadership and execute program if elected as leader
+# Main logic: Single execution flow
 if __name__ == "__main__":
-    threading.Thread(target=monitor_leader).start()
+    if acquire_leader():
+        print(f"{instance_id} is elected as the leader!")
+        send_heartbeat()  # Send a single heartbeat to indicate leadership
+        execute_program()  # Execute critical sections as leader
+        # Clean up leader key after execution
+        redis_client.delete(LEADER_KEY)
+        print(f"{instance_id} has finished execution and released leadership.")
+    else:
+        print(f"{instance_id} is not the leader. Exiting...")
