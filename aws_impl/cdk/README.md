@@ -1,4 +1,5 @@
-# Welcome to your CDK TypeScript project
+
+![Architecture](aws_leader_election_architecture.png)
 
 ## Initialize the project
 ```
