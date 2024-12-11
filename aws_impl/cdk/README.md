@@ -1,8 +1,38 @@
 # Welcome to your CDK TypeScript project
 
-This is a blank project for CDK development with TypeScript.
+## Initialize the project
+```
+cdk init app --language typescript
+npm install
+```
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Minimal Permissions Required for Bootstrap
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:*",
+        "s3:*",
+        "iam:*",
+        "ecr:*",
+        "ssm:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+## Bootstrapping
+
+```
+cdk bootstrap
+cdk deploy
+```
 
 ## Useful commands
 
