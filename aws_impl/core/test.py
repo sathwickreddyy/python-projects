@@ -1,11 +1,19 @@
-import threading
+import threading, logging
 from application import ApplicationLogic
+from config import SSMConfigManager
 from leader_election import LeaderElection
-import logging
+from sns_notifier import SNSNotifier
 
 if __name__ == '__main__':
-    leader_election = LeaderElection("some_api_call")
     application_logic = ApplicationLogic()
+    config = SSMConfigManager()
+    sns_topic_arn = config.get_parameter("/app/config/sns_topic_arn")
+    sns_notifier = SNSNotifier(sns_topic_arn)
+
+    print("Starting Program")
+    leader_election = LeaderElection("some_api_call", config)
+
+    print("Electing Leader")
     leader_election.elect_leader()
     response = ""
     if leader_election.i_am_leader():
