@@ -21,7 +21,7 @@ class LeaderElection:
         :param ssm_config_manager: SSM Config Manager
         """
         # Fetch configurations from SSM Parameter Store
-        redis_endpoint = "0.0.0.0"# ssm_config_manager.get_parameter("/app/config/redis_endpoint")
+        redis_endpoint = ssm_config_manager.get_parameter("/app/config/redis_endpoint")
 
         if not redis_endpoint:
             raise Exception("Failed to fetch necessary configuration from SSM.")
@@ -38,7 +38,7 @@ class LeaderElection:
         """
         Attempt to become the leader by setting a unique value in Redis.
         """
-        return self.redis_manager.acquire_lock(self.leader_key, self.unique_id, 60) # acquire lock for 60 seconds
+        return self.redis_manager.acquire_lock(self.leader_key, self.unique_id, 120) # acquire lock for 60 seconds
 
     def send_heartbeats(self):
         """
@@ -76,9 +76,6 @@ class LeaderElection:
             print("Waiting for leader to complete execution... - from follower :" + self.unique_id)
             logging.info(f"{self.unique_id} is a follower waiting for current leader: {current_leader.decode()} to complete execution")
             time.sleep(2)
-
-    def acquire_program_lock(self):
-        return self.redis_manager.acquire_lock(self.leader_key, self.unique_id, 60)
 
     def cleanup(self):
         # Release locks, etc.

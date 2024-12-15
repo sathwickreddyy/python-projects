@@ -2,11 +2,11 @@ import boto3
 import logging
 
 # Configure logging
-logging.basicConfig(
-    filename="/var/log/leader_election.log",
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+# logging.basicConfig(
+#     filename="/var/log/leader_election.log",
+#     level=logging.INFO,
+#     format="%(asctime)s [%(levelname)s] %(message)s"
+# )
 
 class SSMConfigManager:
     def __init__(self, region_name='ap-southeast-2'):
@@ -21,4 +21,4 @@ class SSMConfigManager:
             return response['Parameter']['Value']
         except Exception as e:
             logging.error(f"Failed to fetch parameter {name}: {e}")
-            return None
+            print(f"Failed to fetch parameter {name}: {e}")

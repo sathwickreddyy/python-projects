@@ -4,7 +4,7 @@ import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
 import * as elb from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import {CfnOutput, Duration} from "aws-cdk-lib";
 import * as iam from 'aws-cdk-lib/aws-iam';
-import {Topic} from "aws-cdk-lib/aws-sns";
+import {KeyPair} from "aws-cdk-lib/aws-ec2";
 
 
 interface Ec2ConstructProps {
@@ -37,17 +37,19 @@ export class Ec2Construct extends Construct {
         const userData = ec2.UserData.forLinux();
         userData.addCommands(
             `#!/bin/bash`,
-            `yum update -y`,
-            `yum install -y python3 pip`,
+            `sudo yum update -y`,
+            `sudo yum install -y python3 pip`,
             `pip install boto3 redis flask`,
             // Download application files from S3
-            `aws s3 cp s3://leader-election-app-bucket/ /home/ec2-user/ --recursive`,
+            `aws s3 cp s3://sathwick-pipeline-s3/core/ /home/ec2-user/ --recursive`,
             // Make sure main.py and server.py are executable
             `chmod +x /home/ec2-user/main.py`,
             `chmod +x /home/ec2-user/server.py`,
             // Start server.py in the background
             `nohup python3 /home/ec2-user/server.py > /home/ec2-user/server.log 2>&1 &`
         );
+
+        const keyPair = KeyPair.fromKeyPairName(this, 'KeyPair', 'test-sr');
 
         // Auto Scaling Group
         const asg = new autoscaling.AutoScalingGroup(this, 'AutoScalingGroup', {
@@ -57,6 +59,7 @@ export class Ec2Construct extends Construct {
             machineImage: ec2.MachineImage.latestAmazonLinux2(),
             minCapacity: 2,
             maxCapacity: 3,
+            keyPair:keyPair,
             securityGroup,
             userData,
             role: ec2Role, // Attach the IAM role to the EC2 instances
