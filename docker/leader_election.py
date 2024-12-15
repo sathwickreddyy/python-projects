@@ -1,6 +1,7 @@
 import time
 import socket
 import logging
+import threading
 
 from redis_manager import RedisManager
 
@@ -25,6 +26,8 @@ class LeaderElection:
         self.leader_key = unique_id + "_leader"
         self.heartbeat_key = "heartbeat:"+self.leader_key
         self.unique_id = unique_id + "_" + self.instance_id
+        self.stop_event = threading.Event()
+        self.heartbeat_thread = None
 
 
     def acquire_leader(self):
@@ -37,17 +40,25 @@ class LeaderElection:
         """
         Send periodic heartbeat to indicate this instance is alive. until program executes
         """
-        try:
+        while not self.stop_event.is_set():
             current_leader = self.redis_manager.get_value(self.leader_key)
-
-            while current_leader is not None and current_leader.decode() == self.unique_id:
-                print("Leader is Alive ", self.leader_key, ":", current_leader)
-                logging.info(f"Sending heartbeat for {current_leader.decode()}")
-                print(f"Sending heartbeat for {current_leader.decode()}")
-                self.redis_manager.set_value(self.heartbeat_key, "alive", 5)  # Heartbeat expires in 5 seconds
+            if current_leader and current_leader.decode() == self.unique_id:
+                print(f"Sending heartbeat for {self.leader_key}")
+                self.redis_manager.set_value(self.heartbeat_key, "alive", 5)
                 time.sleep(3)
-        except Exception as e:
-            print(e)
+            else:
+                break
+
+    def start_heartbeat_thread(self):
+        print("Starting heartbeat thread...")
+        self.heartbeat_thread = threading.Thread(target=self.send_heartbeats)
+        self.heartbeat_thread.start()
+
+    def stop_heartbeat_thread(self):
+        print("Stopping heartbeat thread...")
+        if self.heartbeat_thread:
+            self.stop_event.set()
+            self.heartbeat_thread.join()
 
     def elect_leader(self):
         """
@@ -89,3 +100,5 @@ class LeaderElection:
         # delete leader key
         if self.redis_manager.get_value(self.leader_key):
             self.redis_manager.delete(self.leader_key)
+
+        self.stop_heartbeat_thread()

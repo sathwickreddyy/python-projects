@@ -24,13 +24,12 @@ def execute():
             try:
                 print("No Leader or executing, becoming leader")
                 # create a thread which sends heartbeat every five seconds
-                threading.Thread(target=leader_election.send_heartbeats, daemon=True).start()
+                leader_election.start_heartbeat_thread()
                 application_logic.execute()
                 response = "Leader successfully completed execution of critical sections. \n" + response
             except Exception as e:
                 logging.error(f"Leader encountered an error during execution: {e}")
                 print(f"Leader encountered an error during execution: {e}")
-                leader_election.cleanup()
                 return jsonify({
                     "status": "error",
                     "message": str(e)
