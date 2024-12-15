@@ -45,7 +45,7 @@ class LeaderElection:
         Send periodic heartbeat to indicate this instance is alive. until program executes
         """
         current_leader = self.redis_manager.get_value(self.leader_key)
-        while current_leader and self.redis_manager.get_value(self.leader_key).decode() == self.unique_id:
+        while current_leader and current_leader.decode() == self.unique_id:
             logging.info(f"Sending heartbeat for {self.unique_id}")
             print(f"Sending heartbeat for {self.unique_id}")
             self.redis_manager.set_value(self.heartbeat_key, "alive", 5)  # Heartbeat expires in 5 seconds
@@ -72,7 +72,8 @@ class LeaderElection:
         Monitor the current leader's heartbeat.
         """
         current_leader = self.redis_manager.get_value(self.leader_key).decode()
-        while current_leader is not None and self.redis_manager.get_value(f"heartbeat:{current_leader}").decode() != "alive":
+        heartbeat = self.redis_manager.get_value(f"heartbeat:{current_leader}")
+        while current_leader and heartbeat and self.redis_manager.get_value(f"heartbeat:{current_leader}").decode() != "alive":
             print("Waiting for leader to complete execution... - from follower :" + self.unique_id)
             logging.info(f"{self.unique_id} is a follower waiting for current leader: {current_leader.decode()} to complete execution")
             time.sleep(2)

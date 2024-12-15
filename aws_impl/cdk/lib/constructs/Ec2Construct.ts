@@ -38,8 +38,9 @@ export class Ec2Construct extends Construct {
         userData.addCommands(
             `#!/bin/bash`,
             `sudo yum update -y`,
-            `sudo yum install -y python3 pip`,
+            `sudo yum install -y python3 pip pip3`,
             `pip install boto3 redis flask`,
+            `python3 -m pip install boto3 redis flask`,
             // Download application files from S3
             `aws s3 cp s3://sathwick-pipeline-s3/core/ /home/ec2-user/ --recursive`,
             // Make sure main.py and server.py are executable
