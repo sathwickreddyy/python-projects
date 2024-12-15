@@ -35,3 +35,9 @@ class RedisManager:
         Set a Redis key with a TTL.
         """
         self.redis_client.set(key, value, ex=ttl)
+
+    def delete(self, key):
+        """
+        Delete a Redis key.
+        """
+        self.redis_client.delete(key)

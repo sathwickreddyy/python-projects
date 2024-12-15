@@ -1,7 +1,14 @@
 import boto3
 import logging
 
-class SNSManager:
+# Configure logging
+logging.basicConfig(
+    filename="/var/log/leader_election.log",
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+
+class SNSNotifier:
     def __init__(self, sns_topic_arn, region_name='ap-southeast-2'):
         self.sns_client = boto3.client('sns', region_name=region_name)
         self.sns_topic_arn = sns_topic_arn

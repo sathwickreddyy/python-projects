@@ -8,7 +8,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s"
 )
 
-class ConfigManager:
+class SSMConfigManager:
     def __init__(self, region_name='ap-southeast-2'):
         self.ssm_client = boto3.client('ssm', region_name=region_name)
 
