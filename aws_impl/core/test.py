@@ -11,9 +11,9 @@ if __name__ == '__main__':
     sns_notifier = SNSNotifier(sns_topic_arn)
 
     print("Starting Program")
-    leader_election = LeaderElection("some_api_call", config)
+    leader_election = LeaderElection("Api", config)
 
-    print("Electing Leader")
+
     leader_election.elect_leader()
     response = ""
     if leader_election.i_am_leader():

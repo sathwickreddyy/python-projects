@@ -29,9 +29,9 @@ class LeaderElection:
         # Initialize managers
         self.instance_id = socket.gethostname()
         self.redis_manager = RedisManager(redis_endpoint)
-        self.unique_id = unique_id+"_"+self.instance_id
-        self.leader_key = unique_id+"_leader"
+        self.leader_key = unique_id + "_leader"
         self.heartbeat_key = "heartbeat:"+self.leader_key
+        self.unique_id = unique_id + "_" + self.instance_id
 
 
     def acquire_leader(self):
@@ -44,12 +44,15 @@ class LeaderElection:
         """
         Send periodic heartbeat to indicate this instance is alive. until program executes
         """
-        current_leader = self.redis_manager.get_value(self.leader_key)
-        while current_leader and current_leader.decode() == self.unique_id:
-            logging.info(f"Sending heartbeat for {self.unique_id}")
-            print(f"Sending heartbeat for {self.unique_id}")
-            self.redis_manager.set_value(self.heartbeat_key, "alive", 5)  # Heartbeat expires in 5 seconds
-            time.sleep(3)
+        try:
+            current_leader = self.redis_manager.get_value(self.leader_key)
+            while current_leader and current_leader.decode() == self.unique_id:
+                logging.info(f"Sending heartbeat for {current_leader.decode()}")
+                print(f"Sending heartbeat for {self.unique_id}")
+                self.redis_manager.set_value(self.heartbeat_key, "alive", 5)  # Heartbeat expires in 5 seconds
+                time.sleep(3)
+        except Exception as e:
+            print(e)
 
     def elect_leader(self):
         """
@@ -57,10 +60,12 @@ class LeaderElection:
         :return: current leader
         """
         current_leader = self.redis_manager.get_value(self.leader_key)
+        print(self.leader_key, current_leader)
         if current_leader is None:  # No active leader
-            self.redis_manager.acquire_lock(self.leader_key, self.unique_id, 10) # Leader expires in 10 seconds : Must be more or else duplicate instances will acquire the lock.
-            logging.info(f"{self.unique_id} is elected as the leader!")
-            print(f"{self.unique_id} is elected as the leader!")
+            print("No Active Leader thus Electing myself as Leader")
+            self.acquire_leader()
+            logging.info(f"{self.leader_key} is elected as the leader!")
+            print(f"{self.leader_key} is elected as the leader!")
             return self.leader_key
         return self.redis_manager.get_value(self.leader_key)
 
@@ -71,12 +76,13 @@ class LeaderElection:
         """
         Monitor the current leader's heartbeat.
         """
-        current_leader = self.redis_manager.get_value(self.leader_key).decode()
-        heartbeat = self.redis_manager.get_value(f"heartbeat:{current_leader}")
-        while current_leader and heartbeat and self.redis_manager.get_value(f"heartbeat:{current_leader}").decode() != "alive":
+        current_leader = self.redis_manager.get_value(self.leader_key)
+        heartbeat = self.redis_manager.get_value(self.heartbeat_key)
+        while current_leader and heartbeat and heartbeat.decode() == "alive":
             print("Waiting for leader to complete execution... - from follower :" + self.unique_id)
             logging.info(f"{self.unique_id} is a follower waiting for current leader: {current_leader.decode()} to complete execution")
             time.sleep(2)
+            heartbeat = self.redis_manager.get_value(self.heartbeat_key)
 
     def cleanup(self):
         # Release locks, etc.
