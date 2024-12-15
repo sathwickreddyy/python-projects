@@ -1,12 +1,12 @@
 import boto3
 import logging
 
-# Configure logging
-logging.basicConfig(
-    filename="/var/log/leader_election.log",
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
-)
+# # Configure logging
+# logging.basicConfig(
+#     filename="/var/log/leader_election.log",
+#     level=logging.INFO,
+#     format="%(asctime)s [%(levelname)s] %(message)s"
+# )
 
 class SNSNotifier:
     def __init__(self, sns_topic_arn, region_name='ap-southeast-2'):
@@ -24,5 +24,6 @@ class SNSNotifier:
                 Subject=subject
             )
             logging.info(f"SNS message sent. Message ID: {response['MessageId']}")
+            print(f"SNS message sent. Message ID: {response['MessageId']}")
         except Exception as e:
             logging.error(f"Failed to send SNS message: {e}")
