@@ -13,7 +13,6 @@ if __name__ == '__main__':
     print("Starting Program")
     leader_election = LeaderElection("Api", config)
 
-
     leader_election.elect_leader()
     response = ""
     if leader_election.i_am_leader():

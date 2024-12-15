@@ -57,17 +57,15 @@ class LeaderElection:
     def elect_leader(self):
         """
         Elects the leader if not already elected
-        :return: current leader
         """
         current_leader = self.redis_manager.get_value(self.leader_key)
-        print(self.leader_key, current_leader)
         if current_leader is None:  # No active leader
             print("No Active Leader thus Electing myself as Leader")
             self.acquire_leader()
             logging.info(f"{self.leader_key} is elected as the leader!")
             print(f"{self.leader_key} is elected as the leader!")
-            return self.leader_key
-        return self.redis_manager.get_value(self.leader_key)
+            return
+        print("Leader already elected, marking myself as follower")
 
     def i_am_leader(self):
         return self.redis_manager.get_value(self.leader_key).decode() == self.unique_id
